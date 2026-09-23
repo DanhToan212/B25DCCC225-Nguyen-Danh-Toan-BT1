@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Nordic Goods | Danh sách sản phẩm</title>
+	<style>
+		:root {
+			font-family: "Segoe UI", Arial, sans-serif;
+			color: #edf5ff;
+			background: #07111f;
+			--ink: #edf5ff;
+			--muted: #91a5bc;
+			--paper: #101e31;
+			--accent: #24d6ef;
+			--accent-dark: #1195b8;
+			--line: #203752;
+			--teal: #79f1d1;
+		}
+
+		* { box-sizing: border-box; }
+
+		body {
+			min-height: 100vh;
+			margin: 0;
+			background: radial-gradient(circle at 86% 4%, rgba(36, 214, 239, .16), transparent 30%), linear-gradient(135deg, #07111f 0%, #0d1c30 58%, #101928 100%);
+		}
+
+		.shell { width: min(1180px, 92vw); margin: 0 auto; }
+
+		header {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 24px;
+			padding: 28px 0;
+		}
+
+		.brand { color: var(--ink); font-size: 1.15rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+		.brand span { color: var(--accent); }
+		.brand::before { content: "//"; margin-right: 8px; color: var(--teal); }
+		.cart-button {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			border: 1px solid rgba(121, 241, 209, .35);
+			border-radius: 6px;
+			padding: 10px 16px;
+			color: var(--ink);
+			background: rgba(16, 30, 49, .86);
+			cursor: pointer;
+			font: inherit;
+		}
+		.cart-count { display: grid; width: 24px; height: 24px; place-items: center; border-radius: 50%; color: white; background: var(--accent); font-size: .8rem; }
+
+		.intro { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 24px; padding: 62px 0 38px; }
+		h1 { max-width: 720px; margin: 0; color: var(--ink); font-family: "Segoe UI", Arial, sans-serif; font-size: clamp(2.6rem, 6vw, 5.6rem); font-weight: 800; letter-spacing: -.05em; line-height: .94; }
+		h1 span { color: var(--accent); }
+		.intro p { max-width: 320px; margin: 0 0 5px; color: var(--muted); line-height: 1.6; }
+		.kicker { margin: 0 0 14px; color: var(--teal); font-size: .78rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; }
+
+		.toolbar { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 18px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+		.filters { display: flex; flex-wrap: wrap; gap: 8px; }
+		.filter { border: 1px solid transparent; border-radius: 4px; padding: 8px 14px; color: var(--muted); background: transparent; cursor: pointer; font: inherit; }
+		.filter.active, .filter:hover { border-color: var(--accent); color: var(--accent); background: rgba(36, 214, 239, .08); }
+		.result-count { color: var(--muted); font-size: .9rem; }
+
+		.catalog { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; padding: 32px 0 70px; }
+		.product { overflow: hidden; border: 1px solid var(--line); border-radius: 6px; background: rgba(16, 30, 49, .92); box-shadow: 0 14px 35px rgba(0, 0, 0, .16); transition: transform 180ms ease, border-color 180ms ease; }
+		.product:hover { transform: translateY(-4px); border-color: rgba(36, 214, 239, .65); }
+		.product-image { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+		.product-info { padding: 18px; }
+		.product-meta { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; color: var(--muted); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; }
+		.product h2 { margin: 0 0 10px; font-size: 1.25rem; font-weight: 700; }
+		.product-price { margin: 0 0 18px; color: var(--accent); font-weight: 700; }
+		.add-button { width: 100%; border: 1px solid var(--accent); border-radius: 4px; padding: 12px; color: #06131e; background: var(--accent); cursor: pointer; font: inherit; font-weight: 700; transition: background 150ms ease, color 150ms ease; }
+		.add-button:hover { color: white; background: transparent; }
+
+		.cart-panel { position: fixed; z-index: 2; top: 0; right: 0; display: flex; flex-direction: column; width: min(410px, 100%); height: 100vh; padding: 26px; background: #0d1a2b; box-shadow: -10px 0 35px rgba(0, 0, 0, .35); transform: translateX(105%); transition: transform 220ms ease; }
+		.cart-panel.open { transform: translateX(0); }
+		.cart-heading { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); padding-bottom: 18px; }
+		.cart-heading h2 { margin: 0; font-size: 1.8rem; font-weight: 700; }
+		.close-button { border: 0; color: var(--muted); background: transparent; cursor: pointer; font-size: 1.5rem; }
+		.cart-items { flex: 1; overflow: auto; padding: 12px 0; }
+		.cart-item { display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 16px 0; border-bottom: 1px solid var(--line); }
+		.cart-item strong { font-family: Georgia, serif; font-size: 1.05rem; font-weight: 400; }
+		.cart-item small { color: var(--muted); }
+		.remove-button { border: 0; color: var(--accent-dark); background: transparent; cursor: pointer; font: inherit; }
+		.cart-empty { color: var(--muted); line-height: 1.6; }
+		.cart-footer { border-top: 1px solid var(--line); padding-top: 18px; }
+		.total-row { display: flex; justify-content: space-between; margin-bottom: 16px; font-size: 1.1rem; }
+		.checkout-button { width: 100%; border: 0; border-radius: 4px; padding: 14px; color: #06131e; background: var(--accent); cursor: pointer; font: inherit; font-weight: 700; }
+		.checkout-button:hover { background: var(--accent-dark); }
+		.toast { position: fixed; right: 24px; bottom: 24px; z-index: 3; display: flex; align-items: center; gap: 12px; width: min(410px, calc(100vw - 48px)); min-height: 64px; padding: 14px 18px; border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 8px; color: var(--ink); background: #12243a; box-shadow: 0 18px 45px rgba(0, 0, 0, .35); font-size: .95rem; font-weight: 600; line-height: 1.4; opacity: 0; pointer-events: none; transform: translateY(16px); transition: opacity 180ms ease, transform 180ms ease; }
+		.toast::before { display: grid; flex: 0 0 28px; width: 28px; height: 28px; place-items: center; border-radius: 50%; color: #07111f; background: var(--accent); content: "✓"; font-size: 1rem; font-weight: 800; }
+		.toast.show { opacity: 1; transform: translateY(0); }
+		.toast[data-type="warning"] { border-left-color: #ffc857; }
+		.toast[data-type="warning"]::before { color: #2c2000; background: #ffc857; content: "!"; }
+		.toast[data-type="error"] { border-left-color: #ff6b7a; }
+		.toast[data-type="error"]::before { color: #310810; background: #ff6b7a; content: "×"; }
+
+		@media (max-width: 760px) {
+			.intro { grid-template-columns: 1fr; padding-top: 28px; }
+			.toolbar { align-items: flex-start; flex-direction: column; }
+			.catalog { grid-template-columns: 1fr; }
+			.product-image { aspect-ratio: 16 / 10; }
+			.toast { right: 16px; bottom: 16px; width: calc(100vw - 32px); }
+		}
+	</style>
+</head>
+<body>
+	<div class="shell">
+		<header>
+			<div class="brand">Tech<span>Vault</span></div>
+			<button class="cart-button" id="cartButton" type="button" aria-label="Mở giỏ hàng">
+				Giỏ hàng <span class="cart-count" id="cartCount">0</span>
+			</button>
+		</header>
+
+		<main>
+			<section class="intro">
+				<div>
+					<p class="kicker">Bộ sưu tập phần cứng / 2026</p>
+					<h1>Công nghệ tốt hơn cho nhịp sống <span>nhanh hơn.</span></h1>
+				</div>
+				<p>Thiết bị thông minh, phụ kiện chuẩn chỉnh và những món gear được chọn cho người luôn muốn tiến thêm một bước.</p>
+			</section>
+			<section class="toolbar" aria-label="Bộ lọc sản phẩm">
+				<div class="filters" id="filters"></div>
+				<span class="result-count" id="resultCount"></span>
+			</section>
+			<section class="catalog" id="catalog" aria-live="polite"></section>
+		</main>
+	</div>
+
+	<aside class="cart-panel" id="cartPanel" aria-label="Giỏ hàng">
+		<div class="cart-heading">
+			<h2>Giỏ hàng</h2>
+			<button class="close-button" id="closeCart" type="button" aria-label="Đóng giỏ hàng">&times;</button>
+		</div>
+		<div class="cart-items" id="cartItems"></div>
+		<div class="cart-footer">
+			<div class="total-row"><span>Tạm tính</span><strong id="cartTotal">0 ₫</strong></div>
+			<button class="checkout-button" id="checkoutButton" type="button">Đặt hàng</button>
+		</div>
+	</aside>
+	<div class="toast" id="toast" role="status"></div>
+
+	<script>
+		const products = [
+			{ id: 1, name: "Airpord Max 2", category: "Âm thanh", price: 1890000, image: "https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/airpods-max-hero-select-202409_FMT_WHH?wid=752&hei=636&fmt=jpeg&qlt=90&.v=WXBZVEZCOUNiUWlBYUtjZmtBc0J2MGkxeEVQUXVsbFk4WEhBc0JFOWdSN2pmMHBIdXRoME5iSzRYUmF4Y3dVRy81NGMrcU1sYkxwTFJaVHI1NEQzenBJRnRzZXYwZVJMZmZQVjdBR0RkVVNpdi91OXpsc3gvUHZvVGU1aUpOaFE" },
+			{ id: 2, name: "Monka A75 Max", category: "Bàn phím", price: 2190000, image: "https://lacdau.com/media/product/6478-9.png" },
+			{ id: 3, name: "Apple Watch Ulta 2", category: "Thiết bị đeo", price: 3290000, image: "https://www.apple.com/newsroom/images/2023/09/apple-unveils-apple-watch-ultra-2/article/Apple-Watch-Ultra-2-hero-230912_Full-Bleed-Image.jpg.large.jpg" },
+			{ id: 4, name: "ATK X1", category: "Phụ kiện", price: 890000, image: "https://cdn.shopify.com/s/files/1/0550/0554/4682/files/Weixin_Screenshot_20240926190453_600x600.jpg?v=1727348756" },
+			{ id: 5, name: "Pocket 4", category: "Phụ kiện", price: 1590000, image: "https://cdnv2.tgdd.vn/mwg-static/tgdd/Products/Images/13438/365943/camera-ky-thuat-so-dji-osmo-pocket-4-standard-combo-op-041std-thumb-639123890703123950-600x600.jpg" },
+			{ id: 6, name: "Marshall Woburn 3", category: "Âm thanh", price: 2490000, image: "https://dinhtoan.vn/wp-content/uploads/2025/03/Marshall-Woburn-3-nut-chinh.jpg" }
+		];
+
+		let cart = [];
+		let currentCategory = "Tất cả";
+		const formatPrice = (price = 0) => new Intl.NumberFormat("vi-VN").format(price) + " ₫";
+		const productById = (id) => products.find(({ id: productId }) => productId === id);
+
+		const catalog = document.getElementById("catalog");
+		const filters = document.getElementById("filters");
+		const resultCount = document.getElementById("resultCount");
+		const cartItems = document.getElementById("cartItems");
+		const cartTotal = document.getElementById("cartTotal");
+		const cartCount = document.getElementById("cartCount");
+		const cartPanel = document.getElementById("cartPanel");
+		const toast = document.getElementById("toast");
+
+		const categories = ["Tất cả", ...new Set(products.map(({ category }) => category))];
+		filters.innerHTML = categories.map((category) => `<button class="filter ${category === currentCategory ? "active" : ""}" data-category="${category}" type="button">${category}</button>`).join("");
+
+		const renderProducts = () => {
+			const visibleProducts = currentCategory === "Tất cả"
+				? products
+				: products.filter(({ category }) => category === currentCategory);
+			resultCount.textContent = `${visibleProducts.length} sản phẩm`;
+			catalog.innerHTML = visibleProducts.map(({ id, name, category, price, image }) => `
+				<article class="product">
+					<img class="product-image" src="${image}" alt="${name}" loading="lazy">
+					<div class="product-info">
+						<div class="product-meta"><span>${category}</span><span>#${String(id).padStart(2, "0")}</span></div>
+						<h2>${name}</h2>
+						<p class="product-price">${formatPrice(price)}</p>
+						<button class="add-button" data-product-id="${id}" type="button">Thêm vào giỏ</button>
+					</div>
+				</article>`).join("");
+		};
+
+		const renderCart = () => {
+			const totalQuantity = cart.reduce((total, { quantity }) => total + quantity, 0);
+			const totalPrice = cart.reduce((total, { price, quantity }) => total + price * quantity, 0);
+			cartCount.textContent = totalQuantity;
+			cartTotal.textContent = formatPrice(totalPrice);
+			cartItems.innerHTML = cart.length === 0
+				? `<p class="cart-empty">Giỏ hàng đang trống. Hãy chọn một món đồ bạn thích.</p>`
+				: cart.map(({ name, price, quantity, id }) => `
+					<div class="cart-item">
+						<div><strong>${name}</strong><br><small>${quantity} x ${formatPrice(price)}</small></div>
+						<button class="remove-button" data-remove-id="${id}" type="button">Xóa</button>
+					</div>`).join("");
+		};
+
+		const showToast = (message, type = "success") => {
+			toast.textContent = message;
+			toast.dataset.type = type;
+			toast.classList.add("show");
+			setTimeout(() => toast.classList.remove("show"), 2200);
+		};
+
+		const addToCart = (id) => {
+			const product = productById(id);
+			const existingItem = cart.find(({ id: productId }) => productId === id);
+			cart = existingItem
+				? cart.map((item) => item.id === id ? { ...item, quantity: item.quantity + 1 } : item)
+				: [...cart, { ...product, quantity: 1 }];
+			renderCart();
+			showToast(`${product.name} đã được thêm vào giỏ.`);
+		};
+
+		filters.addEventListener("click", ({ target }) => {
+			if (!target.matches(".filter")) return;
+			currentCategory = target.dataset.category;
+			document.querySelectorAll(".filter").forEach((button) => button.classList.toggle("active", button === target));
+			renderProducts();
+		});
+
+		catalog.addEventListener("click", ({ target }) => {
+			if (target.matches(".add-button")) addToCart(Number(target.dataset.productId));
+		});
+
+		cartItems.addEventListener("click", ({ target }) => {
+			if (!target.matches(".remove-button")) return;
+			cart = cart.filter(({ id }) => id !== Number(target.dataset.removeId));
+			renderCart();
+		});
+
+		document.getElementById("cartButton").addEventListener("click", () => cartPanel.classList.add("open"));
+		document.getElementById("closeCart").addEventListener("click", () => cartPanel.classList.remove("open"));
+		document.getElementById("checkoutButton").addEventListener("click", () => {
+			if (cart.length === 0) return showToast("Bạn chưa có sản phẩm trong giỏ hàng.", "warning");
+			const order = { items: cart, total: cart.reduce((sum, { price, quantity }) => sum + price * quantity, 0) };
+			Promise.resolve(order)
+				.then(({ total }) => `Đặt hàng thành công: ${formatPrice(total)}`)
+				.then((message) => showToast(message, "success"))
+				.catch(() => showToast("Không thể xử lý đơn hàng.", "error"));
+		});
+
+		renderProducts();
+		renderCart();
+	</script>
+</body>
+</html>
